@@ -2,14 +2,17 @@ import { useState, lazy, Suspense } from 'react'
 // hook
 import useFetch from 'src/hooks/useFetch';
 // component
+import Navbar from 'components/Navbar/Navbar';
 import SurveyForm from 'components/SurveyForm/SurveyForm';
 const SubmitAlert = lazy(() => import('components/SumbitAlert/SubmitAlert'));
+const UserManagement = lazy(() => import('components/UserManagement/UserManagement'));
 // css file
 import 'src/App.css'
 
 function App() {
+  // fetch users from API
   const { data: users } = useFetch();
-  // console.log(users.data);
+
   // states to keep track of each input's data
   const [formData, setFormData] = useState({
     firstname: "",
@@ -21,6 +24,12 @@ function App() {
 
   // state to keep track onSubmit form
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // state to switch page
+  const [isFormPage, setIsFormPage] = useState(true);
+
+  // state to keep track if the form is editting
+  const [isEditing, setIsEditinng] = useState(false);
 
   // update formData state
   const updateFormData = (event) => {
@@ -60,17 +69,35 @@ function App() {
 
   return (
     <div className="app">
-      {isSubmitted && (
-        <Suspense fallback={''}>
-          <SubmitAlert show={isSubmitted} setShow={setIsSubmitted} />
-        </Suspense>
-      )}
-      <SurveyForm
-        formData={formData}
-        resetInputValue={resetInputValue}
-        handleInput={updateFormData}
-        setIsSubmitted={setIsSubmitted}
+      <Navbar 
+        isFormPage={isFormPage} 
+        setIsFormPage={setIsFormPage} 
+        editing={setIsEditinng}
       />
+      {isFormPage
+        ? <>
+            {isSubmitted && (
+              <Suspense fallback={''}>
+                <SubmitAlert show={isSubmitted} setShow={setIsSubmitted} />
+              </Suspense>
+            )}
+            <SurveyForm
+              formData={formData}
+              resetInputValue={resetInputValue}
+              handleInput={updateFormData}
+              setIsSubmitted={setIsSubmitted}
+              isEditing={isEditing}
+            />
+          </>
+        : <Suspense fallback={<p>Loading...</p>}>
+            <UserManagement 
+              users={users.data} 
+              setFormData={setFormData}
+              setIsFormPage={setIsFormPage} 
+              editing={setIsEditinng}
+            />
+          </Suspense>
+      } 
     </div>
   );
 }

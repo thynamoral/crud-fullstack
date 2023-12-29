@@ -9,7 +9,11 @@ import InputInterest from 'components/InputInterest/InputInterest';
 const BASE_URL = `http://localhost:8000`;
 
 const SurveyForm = (props) => {
-  const { formData, resetInputValue, handleInput, setIsSubmitted } = props;
+  const {
+    formData, resetInputValue,
+    handleInput, setIsSubmitted,
+    isEditing
+  } = props;
   // handle form submit
   const handleSumbit = async (event) => {
     event.preventDefault();
@@ -23,15 +27,22 @@ const SurveyForm = (props) => {
     else {
       newFormData.interest = "";
       formData.interest.forEach(value => {
-        newFormData.interest += `${value}, `;
+        newFormData.interest += `${value} `;
       })
     }
 
     try {
-      const response = await axios.post(`${BASE_URL}/users`, newFormData);
-      console.log(await response.data);
-      resetInputValue();
-      setIsSubmitted(true);
+      if (!isEditing) {
+        const response = await axios.post(`${BASE_URL}/users`, newFormData);
+        console.log(await response.data);
+        resetInputValue();
+        setIsSubmitted(true);
+      } else {
+        const response = await axios.put(`${BASE_URL}/users/${newFormData.id}`, newFormData);
+        console.log(await response.data);
+        resetInputValue();
+        setIsSubmitted(true);
+      }
     } catch (error) {
       console.log(error.message);
     }
@@ -59,6 +70,7 @@ const SurveyForm = (props) => {
             key={index}
             inputGender={gender}
             handleInput={handleInput}
+            formData={formData}
           />
         ))}
       </div>
